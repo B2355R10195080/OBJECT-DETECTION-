@@ -1,0 +1,42 @@
+# OBJECT-DETECTION USING IMAGES. 
+# USING YOLO , CV2 , PILLOW.
+
+# Install opencv ,matplotlib, pillow 
+!pip install -q ultralytics opencv-python-headless matplotlib pillow
+
+
+# Import libraries 
+from ultralytics import YOLO
+
+import cv2
+
+from matplotlib import pyplot as plt
+
+from PIL import Image
+
+from google.colab import files
+
+# Upload Files as image in .JPG format
+
+uploaded = files.upload()
+
+file_name = list(uploaded.keys()) [0]
+
+#Print uploaded file 
+print("Uploaded:", file_name)
+
+#Define Model
+model=YOLO('yolov8n.pt')
+
+
+results = model(file_name)
+
+annotated = results[0].plot()
+
+
+#Plot the image with Anchor Boxes.
+plt.figure(figsize=(12,8))
+
+plt.imshow(cv2.cvtColor(annotated,cv2.COLOR_BGR2RGB))
+
+plt.axis('off')
