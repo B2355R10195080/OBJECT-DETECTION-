@@ -1,0 +1,69 @@
+# OBJECT-DETECTION-
+# Using YOLO, CV2 and PILLOW 
+
+# INSTALL LIBRARIES 
+!pip install -q ultralytics opencv-python-headless pillow
+
+from ultralytics import YOLO
+
+import cv2
+
+from matplotlib import pyplot as plt
+
+from base64 import b64decode
+
+from google.colab import output
+
+# Define model
+
+model = YOLO ('yolov8n.pt')
+
+def take_photo(filename='snapshot.jpg'):
+  js = """
+   async function takePhoto() {
+     const div = document.createElement('div');
+     const capture = document.createElement('button');
+     capture.textContent = 'Capture';
+     div.appendChild(capture);
+     document.body.appendChild(div);
+     const video = document.createElement('video');
+     video.style.display = 'block';
+     const stream = await navigator.mediaDevices.getUserMedia({video: true});
+     document.body.appendChild(video);
+     video.srcObject = stream;
+     await video.play();
+     // Resize window
+     google.colab.output.setIframeHeight(document.documentElement.scrollHeight, true);
+     // Wait for Capture button
+     await new Promise((resolve) => capture.onclick = resolve);
+     const canvas = document.createElement('canvas');
+     canvas.width = video.videoWidth;
+     canvas.height = video.videoHeight;
+     canvas.getContext('2d').drawImage(video, 0, 0);
+     stream.getTracks().forEach(track => track.stop());
+     const imgData = canvas.toDataURL('image/jpeg').split(',')[1];
+     div.remove();
+     return imgData;
+   }
+   takePhoto();
+   """
+  data = output.eval_js(js)
+
+  with open(filename, 'wb') as f:
+    f.write(b64decode(data))
+
+  return filename
+
+filename = take_photo('snapshot.jpg')
+
+print("Captured:", filename)
+
+results = model(filename)
+
+annotated_results = results[0].plot()
+
+plt.imshow(cv2.cvtColor(annotated_results, cv2.COLOR_BGR2RGB))
+
+plt.axis('off')
+
+plt.show()
